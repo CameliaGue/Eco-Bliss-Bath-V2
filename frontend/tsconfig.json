@@ -21,6 +21,9 @@
     "lib": [
       "es2020",
       "dom"
+    ],
+    "types": [
+      "cypress"
     ]
   },
   "angularCompilerOptions": {
@@ -28,5 +31,9 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "cypress/**/*.ts"
+  ]
 }
