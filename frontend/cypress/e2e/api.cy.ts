@@ -1,105 +1,83 @@
 describe('Tests API', () => {
     let token: string
+    let users: { validUser: { username: string; password: string }, invalidUser: { username: string; password: string } }
+    let product: { testProductId: number }
 
     before(() => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8081/login',
-            body: { username: 'test2@test.fr', password: 'testtest' }
+        cy.fixture('users').then((data) => {
+            users = data
+        }).then(() => {
+            return cy.apiRequest('POST', '/login', {
+                body: { username: users.validUser.username, password: users.validUser.password }
+            })
         }).then((response) => {
             token = response.body.token
         })
+
+        cy.fixture('product').then((data) => {
+            product = data
+        })
     })
 
-    // 1. GET /orders sans connexion → doit renvoyer 403 (anomalie : reçoit 401)
     it('GET /orders sans connexion doit renvoyer 403', () => {
-        cy.request({
-            method: 'GET',
-            url: 'http://localhost:8081/orders',
-            failOnStatusCode: false
-        }).then((response) => {
+        cy.apiRequest('GET', '/orders').then((response) => {
             expect(response.status).to.eq(403)
         })
     })
 
-    // 2. POST /login utilisateur connu → 200
     it('POST /login avec identifiants valides renvoie 200', () => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8081/login',
-            body: { username: 'test2@test.fr', password: 'testtest' }
+        cy.apiRequest('POST', '/login', {
+            body: { username: users.validUser.username, password: users.validUser.password }
         }).then((response) => {
             expect(response.status).to.eq(200)
             expect(response.body).to.have.property('token')
         })
     })
 
-    // 3. POST /login utilisateur inconnu → 401
     it('POST /login avec identifiants invalides renvoie 401', () => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8081/login',
-            body: { username: 'faux@test.fr', password: 'fauxmdp' },
-            failOnStatusCode: false
+        cy.apiRequest('POST', '/login', {
+            body: { username: users.invalidUser.username, password: users.invalidUser.password }
         }).then((response) => {
             expect(response.status).to.eq(401)
         })
     })
 
-    // 4. GET /orders connecté → 200
     it('GET /orders connecté renvoie 200', () => {
-        cy.request({
-            method: 'GET',
-            url: 'http://localhost:8081/orders',
+        cy.apiRequest('GET', '/orders', {
             headers: { Authorization: `Bearer ${token}` }
         }).then((response) => {
             expect(response.status).to.eq(200)
         })
     })
 
-    // 5. GET /products/{id} → 200
-    it('GET /products/3 renvoie 200 avec les données produit', () => {
-        cy.request({
-            method: 'GET',
-            url: 'http://localhost:8081/products/3'
-        }).then((response) => {
+    it('GET /products/{id} renvoie 200 avec les données produit', () => {
+        cy.apiRequest('GET', `/products/${product.testProductId}`).then((response) => {
             expect(response.status).to.eq(200)
             expect(response.body).to.have.property('id')
             expect(response.body).to.have.property('availableStock')
         })
     })
 
-    // 6. POST /orders/add → doit fonctionner en POST selon la doc (anomalie : réel en PUT)
-    it('POST /orders/add doit renvoyer 200 selon la documentation', () => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8081/orders/add',
+    it('POST /orders/add — anomalie de convention REST (doc et implémentation utilisent PUT)', () => {
+        cy.apiRequest('POST', '/orders/add', {
             headers: { Authorization: `Bearer ${token}` },
-            body: { product: 3, quantity: 1 },
-            failOnStatusCode: false
+            body: { product: product.testProductId, quantity: 1 }
         }).then((response) => {
             expect(response.status).to.eq(200)
         })
     })
 
-    // 7. POST /orders/add produit en rupture de stock → doit être refusé
     it('PUT /orders/add avec produit en rupture de stock doit être refusé', () => {
-        cy.request({
-            method: 'PUT',
-            url: 'http://localhost:8081/orders/add',
+        cy.apiRequest('PUT', '/orders/add', {
             headers: { Authorization: `Bearer ${token}` },
-            body: { product: 3, quantity: 1000 },
-            failOnStatusCode: false
+            body: { product: product.testProductId, quantity: 1000 }
         }).then((response) => {
             expect(response.status).to.not.eq(200)
         })
     })
 
-    // 8. POST /reviews → ajouter un avis
     it('POST /reviews ajoute un avis avec succès', () => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8081/reviews',
+        cy.apiRequest('POST', '/reviews', {
             headers: { Authorization: `Bearer ${token}` },
             body: {
                 title: 'Test avis automatisé',
@@ -113,11 +91,8 @@ describe('Tests API', () => {
         })
     })
 
-    // 9. GET /reviews ne doit pas exposer le hash du mot de passe (anomalie critique)
     it('GET /reviews ne doit pas exposer le mot de passe des utilisateurs', () => {
-        cy.request({
-            method: 'GET',
-            url: 'http://localhost:8081/reviews',
+        cy.apiRequest('GET', '/reviews', {
             headers: { Authorization: `Bearer ${token}` }
         }).then((response) => {
             expect(response.status).to.eq(200)
