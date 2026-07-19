@@ -21,5 +21,6 @@ describe('Connexion', () => {
     cy.login(users.validUser.username, users.invalidUser.password)
     cy.wait('@loginRequest').its('response.statusCode').should('eq', 401)
     cy.get('[data-cy="login-errors"]').should('be.visible')
+    cy.get('[data-cy="nav-link-cart"]').should('not.exist')
   })
 })

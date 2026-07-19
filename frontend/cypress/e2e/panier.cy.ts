@@ -51,24 +51,21 @@ describe('Panier', () => {
     it('vérifie que le stock ne devient jamais négatif après un ajout excessif', () => {
         cy.intercept('PUT', '**/orders/add').as('addToCart')
 
+        cy.get('[data-cy="detail-product-quantity"]').clear().type('1000')
+        cy.get('[data-cy="detail-product-add"]').click()
+        cy.wait('@addToCart')
+
         cy.apiRequest('GET', `/products/${product.testProductId}`).then((response) => {
-            const stockActuel = Math.max(response.body.availableStock, 0)
-            const quantiteExcessive = stockActuel + 5
-
-            cy.get('[data-cy="detail-product-quantity"]').clear().type(String(quantiteExcessive))
-            cy.get('[data-cy="detail-product-add"]').click()
-            cy.wait('@addToCart')
-
-            cy.apiRequest('GET', `/products/${product.testProductId}`).then((response2) => {
-                const stockApres = response2.body.availableStock
-                expect(stockApres).to.be.at.least(0)
-            })
+            const stockApres = response.body.availableStock
+            expect(stockApres).to.be.at.least(0)
         })
     })
 
-    it('refuse une quantité négative (-1)', () => {
+    it('refuse une quantité négative (-1) — bloqué côté front, aucune requête envoyée', () => {
+        cy.intercept('PUT', '**/orders/add').as('addToCart')
         cy.get('[data-cy="detail-product-quantity"]').clear().type('-1')
         cy.get('[data-cy="detail-product-add"]').click()
+        cy.get('@addToCart.all').should('have.length', 0)
         cy.get('[data-cy="cart-line"]').should('not.exist')
     })
 

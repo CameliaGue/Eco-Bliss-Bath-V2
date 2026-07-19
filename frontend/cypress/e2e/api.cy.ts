@@ -43,17 +43,23 @@ describe('Tests API', () => {
     })
 
     it('GET /orders connecté renvoie 200', () => {
-        cy.apiRequest('GET', '/orders', {
-            headers: { Authorization: `Bearer ${token}` }
-        }).then((response) => {
-            expect(response.status).to.eq(200)
+        cy.apiRequest('PUT', '/orders/add', {
+            headers: { Authorization: `Bearer ${token}` },
+            body: { product: product.testProductId, quantity: 1 }
+        }).then(() => {
+            cy.apiRequest('GET', '/orders', {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then((response) => {
+                expect(response.status).to.eq(200)
+                expect(response.body).to.have.property('orderLines')
+            })
         })
     })
 
     it('GET /products/{id} renvoie 200 avec les données produit', () => {
         cy.apiRequest('GET', `/products/${product.testProductId}`).then((response) => {
             expect(response.status).to.eq(200)
-            expect(response.body).to.have.property('id')
+            expect(response.body.id).to.eq(product.testProductId)
             expect(response.body).to.have.property('availableStock')
         })
     })
@@ -95,18 +101,31 @@ describe('Tests API', () => {
             }
         }).then((response) => {
             expect(response.status).to.eq(200)
-            expect(response.body).to.have.property('id')
-            expect(response.body).to.have.property('title')
+            expect(response.body.title).to.eq('Test avis automatisé')
         })
     })
 
     it('GET /reviews ne doit pas exposer le mot de passe des utilisateurs', () => {
-        cy.apiRequest('GET', '/reviews', {
-            headers: { Authorization: `Bearer ${token}` }
-        }).then((response) => {
-            expect(response.status).to.eq(200)
-            const premierAvis = response.body[0]
-            expect(premierAvis.author).to.not.have.property('password')
+        const titreUnique = `Avis test sécurité ${Date.now()}`
+
+        cy.apiRequest('POST', '/reviews', {
+            headers: { Authorization: `Bearer ${token}` },
+            body: {
+                title: titreUnique,
+                comment: 'Vérification exposition password',
+                rating: 5
+            }
+        }).then(() => {
+            cy.apiRequest('GET', '/reviews', {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then((response) => {
+                expect(response.status).to.eq(200)
+                const avisCree = response.body.find(
+                    (avis: any) => avis.title === titreUnique
+                )
+                expect(avisCree).to.not.be.undefined
+                expect(avisCree.author).to.not.have.property('password')
+            })
         })
     })
 
@@ -188,6 +207,10 @@ describe('Tests API', () => {
                 headers: { Authorization: `Bearer ${token}` }
             }).then((response) => {
                 expect(response.status).to.eq(200)
+                const ligneEncorePresente = response.body.orderLines.find(
+                    (ligne: any) => ligne.id === ligneAjoutee.id
+                )
+                expect(ligneEncorePresente).to.be.undefined
             })
         })
     })
