@@ -1,12 +1,15 @@
 describe('Connexion', () => {
   let users: { validUser: { username: string; password: string }, invalidUser: { username: string; password: string } }
 
+  // Charge les identifiants de test (utilisateur valide et invalide) avant l'exécution des tests
   before(() => {
     cy.fixture('users').then((data) => {
       users = data
     })
   })
 
+  // Un utilisateur avec des identifiants valides doit pouvoir se connecter
+  // et accéder ensuite au lien vers son panier
   it('connecte un utilisateur valide', () => {
     cy.intercept('POST', '**/login').as('loginRequest')
     cy.visit('/')
@@ -15,6 +18,8 @@ describe('Connexion', () => {
     cy.get('[data-cy="nav-link-cart"]').should('be.visible')
   })
 
+  // Un mot de passe incorrect doit être refusé, un message d'erreur doit s'afficher,
+  // et l'utilisateur ne doit pas être considéré comme connecté
   it('refuse un utilisateur avec un mauvais mot de passe', () => {
     cy.intercept('POST', '**/login').as('loginRequest')
     cy.visit('/')

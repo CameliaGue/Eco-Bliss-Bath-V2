@@ -1,3 +1,4 @@
 {
     "testProductId": 3
 }
+// Fixture pour les tests de produits dans Cypress. Contient l'ID d'un produit spécifique utilisé pour les tests automatisés.

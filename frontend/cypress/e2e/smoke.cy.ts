@@ -1,12 +1,14 @@
 describe('Smoke Tests', () => {
     let users: { validUser: { username: string; password: string } }
 
+    // Charge les identifiants de connexion nécessaires au deuxième test
     before(() => {
         cy.fixture('users').then((data) => {
             users = data
         })
     })
 
+    // Vérifie que les éléments essentiels du formulaire de connexion sont bien présents
     it('vérifie la présence des champs et boutons de connexion', () => {
         cy.visit('/')
         cy.get('[data-cy="nav-link-login"]').should('be.visible').click()
@@ -15,6 +17,8 @@ describe('Smoke Tests', () => {
         cy.get('[data-cy="login-submit"]').should('be.visible')
     })
 
+    // Vérifie qu'une fois connecté, le bouton d'ajout au panier est bien présent
+    // sur la page d'un produit
     it('vérifie la présence du bouton d\'ajout au panier quand connecté', () => {
         cy.visit('/')
         cy.login(users.validUser.username, users.validUser.password)
