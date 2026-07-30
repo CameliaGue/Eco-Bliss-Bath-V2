@@ -21,14 +21,14 @@ describe('Tests API', () => {
         })
     })
 
-    // Un utilisateur non connecté ne doit pas pouvoir accéder à son panier
+    // Test 1 : Un utilisateur non connecté ne doit pas pouvoir accéder à son panier
     it('GET /orders sans connexion doit renvoyer 403', () => {
         cy.apiRequest('GET', '/orders').then((response) => {
             expect(response.status).to.eq(403)
         })
     })
 
-    // La connexion avec un email et un mot de passe valides doit réussir
+    // Test 2 : La connexion avec un email et un mot de passe valides doit réussir
     it('POST /login avec identifiants valides renvoie 200', () => {
         cy.apiRequest('POST', '/login', {
             body: { username: users.validUser.username, password: users.validUser.password }
@@ -38,7 +38,7 @@ describe('Tests API', () => {
         })
     })
 
-    // La connexion avec de mauvais identifiants doit être refusée
+    // Test 3 : La connexion avec de mauvais identifiants doit être refusée
     it('POST /login avec identifiants invalides renvoie 401', () => {
         cy.apiRequest('POST', '/login', {
             body: { username: users.invalidUser.username, password: users.invalidUser.password }
@@ -47,7 +47,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un produit est ajouté au panier au préalable pour garantir qu'une commande est en cours,
+    // Test 4 : Un produit est ajouté au panier au préalable pour garantir qu'une commande est en cours,
     // condition nécessaire pour que GET /orders renvoie un résultat
     it('GET /orders connecté renvoie 200', () => {
         cy.apiRequest('PUT', '/orders/add', {
@@ -63,7 +63,7 @@ describe('Tests API', () => {
         })
     })
 
-    // La fiche d'un produit doit contenir son identifiant et son stock disponible
+    // Test 5 : La fiche d'un produit doit contenir son identifiant et son stock disponible
     it('GET /products/{id} renvoie 200 avec les données produit', () => {
         cy.apiRequest('GET', `/products/${product.testProductId}`).then((response) => {
             expect(response.status).to.eq(200)
@@ -72,7 +72,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Anomalie documentée : l'ajout d'un produit au panier devrait suivre la convention REST
+    // Test 6 : Anomalie documentée : l'ajout d'un produit au panier devrait suivre la convention REST
     // et utiliser la méthode POST, mais seule la méthode PUT est implémentée côté serveur
     it('POST /orders/add — anomalie de convention REST (doc et implémentation utilisent PUT)', () => {
         cy.apiRequest('POST', '/orders/add', {
@@ -83,7 +83,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Une quantité largement supérieure au stock disponible ne devrait pas être acceptée
+    // Test 7 : Une quantité largement supérieure au stock disponible ne devrait pas être acceptée
     it('PUT /orders/add avec produit en rupture de stock doit être refusé', () => {
         cy.apiRequest('PUT', '/orders/add', {
             headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +93,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Une quantité négative doit être rejetée directement par le serveur,
+    // Test 8 : Une quantité négative doit être rejetée directement par le serveur,
     // indépendamment de toute validation effectuée côté interface utilisateur
     it('PUT /orders/add avec quantité négative doit être refusé par l\'API elle-même', () => {
         cy.apiRequest('PUT', '/orders/add', {
@@ -104,7 +104,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un avis doit pouvoir être créé avec un titre, un commentaire et une note
+    // Test 9 : Un avis doit pouvoir être créé avec un titre, un commentaire et une note
     it('POST /reviews ajoute un avis avec succès', () => {
         cy.apiRequest('POST', '/reviews', {
             headers: { Authorization: `Bearer ${token}` },
@@ -119,7 +119,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un avis avec un titre unique est créé pour ce test précis, afin de ne pas dépendre
+    // Test 10 : Un avis avec un titre unique est créé pour ce test précis, afin de ne pas dépendre
     // d'avis existants ; les informations de mot de passe de son auteur ne doivent jamais
     // apparaître dans la réponse de l'API
     it('GET /reviews ne doit pas exposer le mot de passe des utilisateurs', () => {
@@ -146,7 +146,7 @@ describe('Tests API', () => {
         })
     })
 
-    // La liste des produits doit contenir au moins un élément
+    // Test 11 : La liste des produits doit contenir au moins un élément
     it('GET /products renvoie 200 avec la liste des produits', () => {
         cy.apiRequest('GET', '/products').then((response) => {
             expect(response.status).to.eq(200)
@@ -155,7 +155,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Cet endpoint doit toujours renvoyer exactement 3 produits, conformément à sa documentation
+    // Test 12 : Cet endpoint doit toujours renvoyer exactement 3 produits, conformément à sa documentation
     it('GET /products/random renvoie 200 avec 3 produits aléatoires', () => {
         cy.apiRequest('GET', '/products/random').then((response) => {
             expect(response.status).to.eq(200)
@@ -164,7 +164,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un email différent est généré à chaque exécution afin d'éviter tout conflit
+    // Test 13 : Un email différent est généré à chaque exécution afin d'éviter tout conflit
     // avec un compte déjà existant en base
     it('POST /register crée un nouvel utilisateur avec succès', () => {
         const email = `test.${Date.now()}@test.fr`
@@ -185,7 +185,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Les informations renvoyées par cet endpoint doivent correspondre au compte
+    // Test 14 : Les informations renvoyées par cet endpoint doivent correspondre au compte
     // utilisé pour se connecter, et non à un autre utilisateur
     it('GET /me renvoie les informations de l\'utilisateur connecté', () => {
         cy.apiRequest('GET', '/me', {
@@ -197,7 +197,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un produit est ajouté au panier afin d'obtenir l'identifiant de la ligne créée,
+    // Test 15 : Un produit est ajouté au panier afin d'obtenir l'identifiant de la ligne créée,
     // puis sa quantité est modifiée et vérifiée
     it('PUT /orders/{id}/change-quantity met à jour la quantité d\'une ligne du panier', () => {
         cy.apiRequest('PUT', '/orders/add', {
@@ -220,7 +220,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un produit est ajouté au panier afin d'obtenir l'identifiant de la ligne créée,
+    // Test 16 : Un produit est ajouté au panier afin d'obtenir l'identifiant de la ligne créée,
     // puis cette ligne est supprimée et son absence est vérifiée
     it('DELETE /orders/{id}/delete supprime une ligne du panier', () => {
         cy.apiRequest('PUT', '/orders/add', {
@@ -242,7 +242,7 @@ describe('Tests API', () => {
         })
     })
 
-    // Un produit est ajouté au panier, puis la commande est validée
+    // Test 17 : Un produit est ajouté au panier, puis la commande est validée
     // avec les informations de livraison requises
     it('POST /orders valide la commande en cours', () => {
         cy.apiRequest('PUT', '/orders/add', {

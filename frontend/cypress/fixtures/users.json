@@ -8,4 +8,3 @@
         "password": "fauxmdp"
     }
 }
-// Fixture pour les tests d'authentification dans Cypress. Contient des informations d'identification valides et invalides pour les tests automatisés.

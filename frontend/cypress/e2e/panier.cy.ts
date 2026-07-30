@@ -12,8 +12,7 @@ describe('Panier', () => {
         })
     })
 
-    // Avant chaque test : connexion et navigation jusqu'à la page d'un produit,
-    // afin de partir d'un état identique pour tous les tests du fichier
+    // Avant chaque test : connexion et navigation jusqu'à la page d'un produit
     beforeEach(() => {
         cy.visit('/')
         cy.login(users.validUser.username, users.validUser.password)
@@ -24,7 +23,6 @@ describe('Panier', () => {
     })
 
     // Un produit disponible doit pouvoir être ajouté au panier,
-    // avec affichage cohérent de la ligne, de la quantité et du total
     it('ajoute un produit disponible au panier', () => {
         cy.intercept('PUT', '**/orders/add').as('addToCart')
         cy.get('[data-cy="detail-product-stock"]').should('be.visible')
@@ -37,7 +35,6 @@ describe('Panier', () => {
     })
 
     // Le stock du produit est relevé avant et après l'ajout au panier,
-    // afin de vérifier qu'il diminue bien après l'action
     it('vérifie que le stock diminue après ajout au panier', () => {
         cy.intercept('PUT', '**/orders/add').as('addToCart')
 

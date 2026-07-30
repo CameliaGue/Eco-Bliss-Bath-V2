@@ -8,3 +8,5 @@ export default defineConfig({
     },
   },
 });
+
+// Configuration de Cypress pour les tests end-to-end. Définit l'URL de base pour les tests et configure les événements du nœud.

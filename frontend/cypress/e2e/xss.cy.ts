@@ -16,9 +16,7 @@ describe('XSS - Espace commentaire', () => {
         cy.visit('/reviews')
     })
 
-    // Un contenu malveillant est saisi dans le champ titre d'un avis.
-    // Une fois l'avis envoyé et affiché, aucune alerte ne doit se déclencher,
-    // ce qui prouverait que le contenu est correctement échappé plutôt qu'exécuté
+    // Un contenu malveillant est saisi dans le champ titre d'un avis
     it('résiste à une injection XSS dans le titre', () => {
         cy.intercept('POST', '**/reviews').as('submitReview')
         let xssDetecte = false
