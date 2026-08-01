@@ -1,7 +1,7 @@
 describe('Smoke Tests', () => {
     let users: { validUser: { username: string; password: string } }
 
-    // Charge les identifiants de connexion nécessaires au deuxième test
+    // Charge les identifiants de connexion nécessaires pour les tests suivants
     before(() => {
         cy.fixture('users').then((data) => {
             users = data
@@ -27,5 +27,15 @@ describe('Smoke Tests', () => {
         cy.visit('/products')
         cy.get('[data-cy="product-link"]').first().should('be.visible').click()
         cy.get('[data-cy="detail-product-add"]').should('be.visible')
+    })
+
+    // Vérifie que le champ de disponibilité du produit est bien présent
+    // sur la page d'un produit
+    it('vérifie la présence du champ de disponibilité du produit', () => {
+        cy.visit('/')
+        cy.login(users.validUser.username, users.validUser.password)
+        cy.visit('/products')
+        cy.get('[data-cy="product-link"]').first().click()
+        cy.get('[data-cy="detail-product-stock"]').should('be.visible')
     })
 })
